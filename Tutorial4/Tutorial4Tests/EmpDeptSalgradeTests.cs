@@ -60,7 +60,7 @@ public class EmpDeptSalgradeTests
 
         var result = (
             from emp in emps
-            select new{emp.EName, emp.Sal}).ToList();
+            select new { emp.EName, emp.Sal }).ToList();
         
          Assert.All(result, r =>
          {
@@ -77,9 +77,12 @@ public class EmpDeptSalgradeTests
         var emps = Database.GetEmps();
         var depts = Database.GetDepts();
 
-        //var result = null; 
+        var result = emps.Join(depts,
+            emp => emp.DeptNo,
+            dept => dept.DeptNo,
+            (emp, dept) => new {emp.EName, dept.DName}).ToList();
 
-        //Assert.Contains(result, r => r.DName == "SALES" && r.EName == "ALLEN");
+        Assert.Contains(result, r => r.DName == "SALES" && r.EName == "ALLEN");
     }
 
     // 6. Group by DeptNo
@@ -89,9 +92,11 @@ public class EmpDeptSalgradeTests
     {
         var emps = Database.GetEmps();
 
-        // var result = null; 
-        //
-        // Assert.Contains(result, g => g.DeptNo == 30 && g.Count == 2);
+        var result = (from emp in emps
+                group emp by emp.DeptNo into g
+                select new {DeptNo = g.Key, Count = g.Count()}).ToList(); 
+        
+        Assert.Contains(result, g => g.DeptNo == 30 && g.Count == 2);
     }
 
     // 7. SelectMany (simulate flattening)
@@ -101,9 +106,11 @@ public class EmpDeptSalgradeTests
     {
         var emps = Database.GetEmps();
 
-        // var result = null; 
-        //
-        // Assert.All(result, r => Assert.NotNull(r.Comm));
+        var result = (from emp in emps
+                where emp.Comm != null
+                    select new {emp.EName,emp.Comm}); 
+        
+        Assert.All(result, r => Assert.NotNull(r.Comm));
     }
 
     // 8. Join with Salgrade
